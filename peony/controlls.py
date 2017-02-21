@@ -10,7 +10,7 @@
 
 from django.http import HttpResponse,JsonResponse, Http404 
 from django.core import serializers
-from .models import User, Item
+from .models import User, Item, Account
 from .utils import get_item_info_from_xxx_api
 def register(request):
     if request.method == 'POST':
@@ -52,7 +52,21 @@ def getItemInfo(request, barcode):
 
    
 def record(request):
-    print(dir(request.body))
-    print(request.POST)
-    return JsonResponse({"code":"aa"})
+    params = {}
+    for key in request.POST:
+        if(request.POST.get(key)):
+            params[key] =  request.POST.get(key)
+
+        # 检查item是否存在
+        if('item' == key):
+            i = Item.objects.filter(pk = params[key])
+            if(i):
+                params[key] = i[0]
+            else:
+                del params[key]
+            
+    a = Account()
+    a.dictializer(params)
+    a.save()
+    return JsonResponse(a.getDict())
     

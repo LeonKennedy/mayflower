@@ -41,13 +41,13 @@ class Item(models.Model):
                 object.__setattr__(self, k, dictionary[k])
 
     def getDict(self):
-        return dict([(i.name,self.__getattribute__(i.name)) for i in self._meta.fields if i.name != "id"])
+        return dict([(i.name,self.__getattribute__(i.name)) for i in self._meta.fields ])
         
 
 
 
 class Account(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, null=True)
+    item = models.ForeignKey(Item, null=True)
     num = models.FloatField(default=0)
     price = models.FloatField(default=0)
     shop = models.CharField(max_length=124, default=None)
@@ -55,8 +55,18 @@ class Account(models.Model):
     origin = models.CharField(max_length=3, default='US')
     paytype = models.CharField(max_length=3, default = 0 )
     update_date = models.DateTimeField('last edit', auto_now = True)
+    message = models.CharField(max_length=255, default=None, null=True)
+    # 0 is default
+    # 7 is delete
+    status = models.SmallIntegerField(max_length=2, default = 0 )
     
+    def dictializer(self, dictionary):
+        for k in dictionary.keys():
+            if(hasattr(self, k)):
+                object.__setattr__(self, k, dictionary[k])
 
+    def getDict(self):
+        return dict([(i.name,self.__getattribute__(i.name)) for i in self._meta.fields ])
     
     
     
