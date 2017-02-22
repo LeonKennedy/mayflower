@@ -16,6 +16,7 @@ urlpatterns = [
     url(r'^register$', controlls.register, name='register'),
     url(r'^profile/(?P<sign>[0-9,a-z]+)$',controlls.profile, name='profile'),
     url(r'^getiteminfo/(?P<barcode>[A-Za-z0-9]+)$', controlls.getItemInfo, name='iteminfo'),
-    url(r'^record$', controlls.record, name= 'record'),
+    url(r'^record/(?P<recordid>[A-Za-z0-9]*)$', controlls.record, name= 'record'),
+    url(r'^accounts$', controlls.account, name= 'account'),
 ]
 

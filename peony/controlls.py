@@ -8,8 +8,10 @@
 # Last Modified: 2017-02-16 15:28:18
 #**********************************************/
 
+import pickle
 from django.http import HttpResponse,JsonResponse, Http404 
 from django.core import serializers
+from django.conf import settings
 from .models import User, Item, Account
 from .utils import get_item_info_from_xxx_api
 def register(request):
@@ -51,22 +53,50 @@ def getItemInfo(request, barcode):
         raise Http404()
 
    
-def record(request):
-    params = {}
-    for key in request.POST:
-        if(request.POST.get(key)):
-            params[key] =  request.POST.get(key)
+#记录一条
+def record(request, recordid):
+    if(request.method == 'DELETE'):
+        if(settings.DEBUG):
+            Account.objects.filter(pk= recordid).delete()
+            return JsonResponse({"success":True})
+        else:
+            Account.objects.filter(pk= recordid).update(status=7)
+            return JsonResponse({"success":True})
+    elif(request.method == 'GET'):
+        a = Account.objects.filter(pk=recordid)
+        if(a):
+            return JsonResponse(a[0].getDict())
+        else:
+            raise Http404()
+    else:
+        params = {}
+        for key in request.POST:
+            if(request.POST.get(key)):
+                params[key] =  request.POST.get(key)
 
-        # 检查item是否存在
-        if('item' == key):
-            i = Item.objects.filter(pk = params[key])
-            if(i):
-                params[key] = i[0]
-            else:
-                del params[key]
-            
-    a = Account()
-    a.dictializer(params)
-    a.save()
-    return JsonResponse(a.getDict())
+            # 检查item是否存在
+            #if('item' == key):
+            #    i = Item.objects.filter(pk = params[key])
+            #    if(i):
+            #        params[key] = i[0]
+            #    else:
+            #        del params[key]
+                
+        if(params):
+            a = Account()
+            a.dictializer(params)
+            a.save()
+            return JsonResponse(a.getDict())
+        return JsonResponse({"success":False})
+
+#def olenji(request):
+#    print(request.method)
+#    def _wapper(func):
+#        return func
+#    return _wapper
+
+#账户信息
+def account(request):
+    return JsonResponse({"success":False})
     
+

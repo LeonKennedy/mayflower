@@ -2,7 +2,17 @@ import uuid
 from django.db import models
 from django.core import serializers
 
-class User(models.Model):
+
+class PeonyModel(models.Model):
+    models_str = ("user", "item", "account")
+    class Meta:
+        abstract = True
+
+    def getDict(self):
+        return dict([(i.attname,self.__getattribute__(i.attname)) for i in self._meta.fields ])
+
+
+class User(PeonyModel):
     signature = models.CharField(max_length=64, unique=True, default='olenji')
 #    nickname = models.CharField(max_length=200, default=None)
     phone = models.CharField(max_length=55, default=None, null=True)
@@ -35,18 +45,19 @@ class Item(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     message = models.CharField(max_length=122,default=None)
 
+    def __str__(self):
+        return self.id
+
     def dictializer(self, dictionary):
         for k in dictionary.keys():
             if(hasattr(self, k)):
                 object.__setattr__(self, k, dictionary[k])
 
-    def getDict(self):
-        return dict([(i.name,self.__getattribute__(i.name)) for i in self._meta.fields ])
         
 
 
 
-class Account(models.Model):
+class Account(PeonyModel):
     item = models.ForeignKey(Item, null=True)
     num = models.FloatField(default=0)
     price = models.FloatField(default=0)
@@ -58,15 +69,13 @@ class Account(models.Model):
     message = models.CharField(max_length=255, default=None, null=True)
     # 0 is default
     # 7 is delete
-    status = models.SmallIntegerField(max_length=2, default = 0 )
+    status = models.SmallIntegerField(default = 0 )
     
     def dictializer(self, dictionary):
         for k in dictionary.keys():
             if(hasattr(self, k)):
                 object.__setattr__(self, k, dictionary[k])
 
-    def getDict(self):
-        return dict([(i.name,self.__getattribute__(i.name)) for i in self._meta.fields ])
     
     
     
