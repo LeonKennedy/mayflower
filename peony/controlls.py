@@ -89,12 +89,6 @@ def record(request, recordid):
             return JsonResponse(a.getDict())
         return JsonResponse({"success":False})
 
-#def olenji(request):
-#    print(request.method)
-#    def _wapper(func):
-#        return func
-#    return _wapper
-
 #账户信息
 def account(request):
     return JsonResponse({"success":False})

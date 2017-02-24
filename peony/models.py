@@ -25,9 +25,6 @@ class User(PeonyModel):
     def __str__(self):
         return '[%d] %s %s' % (self.id, self.nickname, self.phone)
 
-    def getDict(self):
-        return dict([(i.name,self.__getattribute__(i.name)) for i in self._meta.fields if i.name != "id"])
-
 class Token(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable  = False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -53,11 +50,8 @@ class Item(models.Model):
             if(hasattr(self, k)):
                 object.__setattr__(self, k, dictionary[k])
 
-        
-
-
-
 class Account(PeonyModel):
+    user = models.ForeignKey(User, on_delete = models.CASCADE)
     item = models.ForeignKey(Item, null=True)
     num = models.FloatField(default=0)
     price = models.FloatField(default=0)

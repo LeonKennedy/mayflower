@@ -1,3 +1,5 @@
 peony/migrations
 mayflower/__pycache__
 peony/__pycache__
+mayflower.log
+project-master.pid
