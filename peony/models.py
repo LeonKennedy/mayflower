@@ -1,4 +1,4 @@
-import uuid
+import uuid, datetime
 from django.db import models
 from django.core import serializers
 
@@ -31,7 +31,7 @@ class Token(models.Model):
     create_date = models.DateTimeField('date user sign up', auto_now_add=True)
     
 
-class Item(models.Model):
+class Item(PeonyModel):
     name = models.CharField(max_length=124, default=None)
     en_name = models.CharField(max_length=124, default=None)
     bar_code = models.CharField(max_length=64, unique=True, null=True, default=None)
@@ -70,6 +70,15 @@ class Account(PeonyModel):
             if(hasattr(self, k)):
                 object.__setattr__(self, k, dictionary[k])
 
+class Captcha(PeonyModel):
+    phone = models.CharField(max_length=15,unique=True)
+    code = models.PositiveIntegerField()
+    last_date = models.DateTimeField(auto_now = True)
+
+    def isExpired(self):
+        print(self.last_date)
+        print(datetime.datetime.utcnow() - datetime.timedelta(minutes=15))
+        return self.last_date < (datetime.datetime.utcnow() - datetime.timedelta(minutes=15))
     
     
     

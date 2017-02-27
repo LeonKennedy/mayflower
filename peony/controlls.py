@@ -8,17 +8,48 @@
 # Last Modified: 2017-02-16 15:28:18
 #**********************************************/
 
-import pickle
+import pickle, random, datetime
 from django.http import HttpResponse,JsonResponse, Http404 
 from django.core import serializers
 from django.conf import settings
-from .models import User, Item, Account
-from .utils import get_item_info_from_xxx_api
+from .models import User, Item, Account, Captcha
+from .utils import get_item_info_from_xxx_api, resp, send_captcha
+
+
+#发射手机验证码
+def captcha(request):
+    if(request.method == 'POST'):
+        cap = random.randint(10000,99999)
+        phone = request.POST['phone']
+        if send_captcha(phone, cap):
+            obj_c, created = Captcha.objects.update_or_create(phone = phone,defaults={'code':cap})
+            return resp(data = cap)
+        else:
+            return resp(code = 5124)
+    raise Http404()
+
+
+def captcha_verify(request):
+    if request.method == 'POST':
+        phone = request.POST['phone']
+        cap = request.POST.get('captcha')
+        if not phone or not cap:
+            return resp(code = 5122)
+        timedual = datetime.datetime.now() - datetime.timedelta(minutes=15)
+        c = Captcha.objects.filter(phone=phone, code=cap, last_date__gte=timedual)
+        if c:
+            return resp()
+        else:
+            return resp(code=5126)
+    raise Http404()
+    
+
+
 def register(request):
     if request.method == 'POST':
-        phone = reqeust.POST['phone']
+        phone = request.POST['phone']
         wechatid = request.POST['signature']
-        return JsonResponse({"code":"aa"})
+        return resp()
     else:
         raise Http404("Question does not exist")
 
@@ -35,12 +66,12 @@ def profile(request, sign):
             raise Http404()
     return JsonResponse(u[0].getDict())
 
-def getItemInfo(request, barcode):
+def itemInfo(request, barcode):
     #get from db
     items = Item.objects.filter(bar_code = barcode)
     if(items):
         item = items[0]
-        return JsonResponse(item.getDict())
+        return resp(data=item.getDict())
 
     #get from api
     iteminfo = get_item_info_from_xxx_api(barcode)
@@ -48,7 +79,7 @@ def getItemInfo(request, barcode):
         i = Item(bar_code = barcode)
         i.dictializer(iteminfo)
         i.save()
-        return JsonResponse(iteminfo)
+        return resp(data=iteminfo)
     else:
         raise Http404()
 
@@ -58,14 +89,14 @@ def record(request, recordid):
     if(request.method == 'DELETE'):
         if(settings.DEBUG):
             Account.objects.filter(pk= recordid).delete()
-            return JsonResponse({"success":True})
+            return resp()
         else:
             Account.objects.filter(pk= recordid).update(status=7)
-            return JsonResponse({"success":True})
+            return resp()
     elif(request.method == 'GET'):
         a = Account.objects.filter(pk=recordid)
         if(a):
-            return JsonResponse(a[0].getDict())
+            return resp(a[0].getDict())
         else:
             raise Http404()
     else:
@@ -86,11 +117,16 @@ def record(request, recordid):
             a = Account()
             a.dictializer(params)
             a.save()
-            return JsonResponse(a.getDict())
-        return JsonResponse({"success":False})
+            return resp(a.getDict())
+        return resp()
 
 #账户信息
 def account(request):
-    return JsonResponse({"success":False})
+    if(request.method == 'GET'):
+        
+
+        return resp()
+    else:
+        raise Http404()
     
 
