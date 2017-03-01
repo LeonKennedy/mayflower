@@ -71,6 +71,7 @@ def itemInfo(request, barcode):
     items = Item.objects.filter(bar_code = barcode)
     if(items):
         item = items[0]
+        print(item.getDict())
         return resp(data=item.getDict())
 
     #get from api
@@ -79,7 +80,7 @@ def itemInfo(request, barcode):
         i = Item(bar_code = barcode)
         i.dictializer(iteminfo)
         i.save()
-        return resp(data=iteminfo)
+        return resp(data=i.getDict())
     else:
         raise Http404()
 

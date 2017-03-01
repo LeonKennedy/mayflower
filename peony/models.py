@@ -37,8 +37,10 @@ class Item(PeonyModel):
     bar_code = models.CharField(max_length=64, unique=True, null=True, default=None)
     price = models.FloatField(default=0)
     img = models.CharField(max_length=255, default=None)
+    netweight = models.FloatField(default=0)
     tag = models.CharField(max_length=122, default=None)
     origin = models.CharField(max_length=3, default='US')
+    remark = models.CharField(max_length=255, null=True)
     create_date = models.DateTimeField(auto_now_add=True)
     message = models.CharField(max_length=122,default=None)
 
