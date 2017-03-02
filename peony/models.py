@@ -13,14 +13,14 @@ class PeonyModel(models.Model):
 
 
 class User(PeonyModel):
-    signature = models.CharField(max_length=64, unique=True, default='olenji')
+    device_id = models.CharField(max_length=64, unique=True, default='olenji')
 #    nickname = models.CharField(max_length=200, default=None)
-    phone = models.CharField(max_length=55, default=None, null=True)
+    phone = models.CharField(max_length=55, unique=True,default=None, null=True)
 #    password = models.CharField(max_length=66, default = None)
     expenditure = models.FloatField(default=0)
     income = models.FloatField(default=0)
     create_date = models.DateTimeField('date user sign up', auto_now_add=True)
-#    update_date = models.DateTimeField('last edit', auto_now = True)
+    update_date = models.DateTimeField('last edit', auto_now = True)
 
     def __str__(self):
         return '[%d] %s %s' % (self.id, self.nickname, self.phone)

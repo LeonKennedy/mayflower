@@ -12,7 +12,7 @@ import pickle, random, datetime
 from django.http import HttpResponse,JsonResponse, Http404 
 from django.core import serializers
 from django.conf import settings
-from .models import User, Item, Account, Captcha
+from .models import User, Item, Account, Captcha,Token
 from .utils import get_item_info_from_xxx_api, resp, send_captcha
 
 
@@ -38,20 +38,27 @@ def captcha_verify(request):
         timedual = datetime.datetime.now() - datetime.timedelta(minutes=15)
         c = Captcha.objects.filter(phone=phone, code=cap, last_date__gte=timedual)
         if c:
-            return resp()
+            udict,created = register({'phone':phone})
+            return resp(data=udict)
         else:
             return resp(code=5126)
     raise Http404()
     
-
-
-def register(request):
+def login(request):
     if request.method == 'POST':
-        phone = request.POST['phone']
-        wechatid = request.POST['signature']
-        return resp()
-    else:
-        raise Http404("Question does not exist")
+        deviceid = request.POST.get('deviceid')
+        if deviceid:
+            udict , created = register({'device_id' : deviceid})
+            print(created)
+            return resp(data=udict)
+    raise Http404()
+
+def register(param):
+    u, created =  User.objects.get_or_create(**param) 
+    t, iscreated = Token.objects.get_or_create(user=u)
+    data = u.getDict()
+    data['token'] = t.id
+    return data,created
 
 def profile(request, sign):
     u = User.objects.filter(signature=sign)

@@ -15,6 +15,7 @@ app_name = 'peony'
 urlpatterns = [
     url(r'^captcha$', controlls.captcha, name='captcha'),
     url(r'^captcha/verify$', controlls.captcha_verify, name='captcha_verify'),
+    url(r'^login$', controlls.login, name='login'),
     url(r'^register$', controlls.register, name='register'),
     url(r'^profile/(?P<sign>[0-9,a-z]+)$',controlls.profile, name='profile'),
     url(r'^item/(?P<barcode>[A-Za-z0-9]+)$', controlls.itemInfo, name='iteminfo'),
