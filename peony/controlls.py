@@ -94,13 +94,19 @@ def itemInfo(request, barcode):
    
 #记录一条
 def record(request, recordid):
+    u = request.META.get('user')
     if(request.method == 'DELETE'):
+        a = Account.objects.filter(pk= recordid,user=u)
+        if a:
+            a = a[0]
         if(settings.DEBUG):
-            Account.objects.filter(pk= recordid).delete()
-            return resp()
+            a.delete()
         else:
-            Account.objects.filter(pk= recordid).update(status=7)
-            return resp()
+            a.update(status=7)
+        #支出减少
+        u.expenditure -= a.totelprice 
+        u.save()
+        return resp()
     elif(request.method == 'GET'):
         a = Account.objects.filter(pk=recordid)
         if(a):
@@ -112,27 +118,23 @@ def record(request, recordid):
         for key in request.POST:
             if(request.POST.get(key)):
                 params[key] =  request.POST.get(key)
-
-            # 检查item是否存在
-            #if('item' == key):
-            #    i = Item.objects.filter(pk = params[key])
-            #    if(i):
-            #        params[key] = i[0]
-            #    else:
-            #        del params[key]
                 
         if(params):
             a = Account()
             a.dictializer(params)
+            a.stock = params['num']
+            a.user = u
+            a.totelprice = (float(params['num']) * float(params['price'])) 
             a.save()
+            #计算支出
+            u.expenditure += a.totelprice
+            u.save()
             return resp(a.getDict())
         return resp()
 
 #账户信息
 def account(request):
     if(request.method == 'GET'):
-        
-
         return resp()
     else:
         raise Http404()

@@ -56,6 +56,7 @@ class Account(PeonyModel):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
     item = models.ForeignKey(Item, null=True)
     num = models.FloatField(default=0)
+    stock = models.FloatField(default=0)
     price = models.FloatField(default=0)
     shop = models.CharField(max_length=124, default=None)
     totelprice = models.FloatField('total price', default=0)
