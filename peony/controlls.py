@@ -135,7 +135,21 @@ def record(request, recordid):
 #账户信息
 def account(request):
     if(request.method == 'GET'):
-        return resp()
+        u = request.META.get('user')
+        try:
+            offset = int(request.GET.get('offset',default=0))
+            limit = int(request.GET.get('limit',default=10))
+        except:
+            offset, limit = 0, 10
+        records = list()
+        for a in Account.objects.filter(user=u)[offset:limit]:
+            records.append(a.getDict())
+        result = {
+            'total' : Account.objects.filter(user = u).count(),
+            'offset' : offset,
+            'limit' : len(records),
+            'data' : records}
+        return resp(data = result)
     else:
         raise Http404()
     

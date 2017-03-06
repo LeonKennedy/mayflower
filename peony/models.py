@@ -11,6 +11,11 @@ class PeonyModel(models.Model):
     def getDict(self):
         return dict([(i.attname,self.__getattribute__(i.attname)) for i in self._meta.fields ])
 
+    def dictializer(self, dictionary):
+        for k in dictionary.keys():
+            if(hasattr(self, k)):
+                object.__setattr__(self, k, dictionary[k])
+        
 
 class User(PeonyModel):
     device_id = models.CharField(max_length=64, unique=True, default='olenji')
@@ -68,11 +73,6 @@ class Account(PeonyModel):
     # 7 is delete
     status = models.SmallIntegerField(default = 0 )
     
-    def dictializer(self, dictionary):
-        for k in dictionary.keys():
-            if(hasattr(self, k)):
-                object.__setattr__(self, k, dictionary[k])
-
 class Captcha(PeonyModel):
     phone = models.CharField(max_length=15,unique=True)
     code = models.PositiveIntegerField()
