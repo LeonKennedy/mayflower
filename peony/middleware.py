@@ -40,7 +40,7 @@ class VerifyMiddleware(object):
 
     def verifytoken(self, request):
         #需要验证的方法 加入此元祖
-        repr_list = ('profile','item','record', 'account')
+        repr_list = ('profile','item','record', 'account','feedback')
         mayflowertoken = request.META.get("HTTP_TOKEN")
         if not request.path.split('/')[2] in repr_list:
             return True

@@ -83,6 +83,12 @@ class Captcha(PeonyModel):
         print(datetime.datetime.utcnow() - datetime.timedelta(minutes=15))
         return self.last_date < (datetime.datetime.utcnow() - datetime.timedelta(minutes=15))
     
+
+class Feedback(PeonyModel):
+    user = models.ForeignKey(User)
+    content = models.CharField(max_length=512, default=None)
+    create_date = models.DateTimeField(auto_now_add=True)
+    
     
     
 

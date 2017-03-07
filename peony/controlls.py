@@ -8,11 +8,11 @@
 # Last Modified: 2017-02-16 15:28:18
 #**********************************************/
 
-import pickle, random, datetime
+import pickle, random, datetime, pdb
 from django.http import HttpResponse,JsonResponse, Http404 
 from django.core import serializers
 from django.conf import settings
-from .models import User, Item, Account, Captcha,Token
+from .models import User, Item, Account, Captcha,Token, Feedback
 from .utils import get_item_info_from_xxx_api, resp, send_captcha
 
 
@@ -60,18 +60,12 @@ def register(param):
     data['token'] = t.id
     return data,created
 
-def profile(request, sign):
-    u = User.objects.filter(signature=sign)
-    if(u):
-        if(request.method == 'POST'):
-            u[0].phone = request.POST.get('phone')
-            u[0].save()
-    else:
-        if(request.method == 'GET'):
-            u = (User.objects.create(signature = sign),)
-        elif(request.method == 'POST'):
-            raise Http404()
-    return JsonResponse(u[0].getDict())
+def profile(request):
+    u = request.META.get('user')
+    if(request.method == 'POST'):
+        u.phone = request.POST.get('phone')
+        u.save()
+    return resp(data = u.getDict())
 
 def itemInfo(request, barcode):
     #get from db
@@ -153,4 +147,25 @@ def account(request):
     else:
         raise Http404()
     
-
+    #反馈
+def feedback(request):
+    u = request.META.get('user')
+    if request.method == 'GET':
+        try:
+            offset = int(request.GET.get('offset',default=0))
+            limit = int(request.GET.get('limit',default=10))
+        except:
+            offset, limit = 0, 10
+        records = list()
+        for f in Feedback.objects.filter(user=u)[offset:limit]:
+            records.append(f.getDict())
+        result = {
+            'total' : Feedback.objects.filter(user = u).count(),
+            'offset' : offset,
+            'limit' : len(records),
+            'data' : records}
+        return resp(data = result)
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content : f = Feedback.objects.create(user=u, content=content)
+        return resp()
