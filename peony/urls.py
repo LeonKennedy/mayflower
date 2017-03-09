@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^item/(?P<barcode>[A-Za-z0-9]+)$', controlls.itemInfo, name='iteminfo'),
     url(r'^record/(?P<recordid>[A-Za-z0-9]*)$', controlls.record, name= 'record'),
     url(r'^account$', controlls.account, name= 'account'),
+    url(r'^sale$', controlls.sale, name= 'sale'),
     url(r'^feedback$', controlls.feedback, name= 'feedback'),
 ]
 

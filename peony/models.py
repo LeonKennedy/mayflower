@@ -11,7 +11,9 @@ class PeonyModel(models.Model):
     def getDict(self):
         return dict([(i.attname,self.__getattribute__(i.attname)) for i in self._meta.fields ])
 
-    def dictializer(self, dictionary):
+    def dictializer(self,queryset =None, dictionary=None):
+        if queryset:
+            return True
         for k in dictionary.keys():
             if(hasattr(self, k)):
                 object.__setattr__(self, k, dictionary[k])
@@ -57,16 +59,33 @@ class Item(PeonyModel):
             if(hasattr(self, k)):
                 object.__setattr__(self, k, dictionary[k])
 
+#入库账单
 class Account(PeonyModel):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
     item = models.ForeignKey(Item, null=True)
-    num = models.FloatField(default=0)
-    stock = models.FloatField(default=0)
+    num = models.FloatField(default=1)
+    stock = models.FloatField(default=1)
     price = models.FloatField(default=0)
     shop = models.CharField(max_length=124, default=None)
     totelprice = models.FloatField('total price', default=0)
     origin = models.CharField(max_length=3, default='US')
     paytype = models.CharField(max_length=3, default = 0 )
+    create_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField('last edit', auto_now = True)
+    message = models.CharField(max_length=255, default=None, null=True)
+    # 0 is default
+    # 7 is delete
+    status = models.SmallIntegerField(default = 0 )
+
+
+#售出账单
+class Sales(PeonyModel):
+    user = models.ForeignKey(User, on_delete = models.CASCADE)
+    item = models.ForeignKey(Item, null=True)
+    num = models.FloatField(default=1)
+    price = models.FloatField(default=0)
+    totelprice = models.FloatField(default=0)
+    create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField('last edit', auto_now = True)
     message = models.CharField(max_length=255, default=None, null=True)
     # 0 is default

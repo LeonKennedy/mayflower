@@ -12,7 +12,7 @@ import pickle, random, datetime, pdb
 from django.http import HttpResponse,JsonResponse, Http404 
 from django.core import serializers
 from django.conf import settings
-from .models import User, Item, Account, Captcha,Token, Feedback
+from .models import User, Item, Account, Captcha,Token, Feedback, Sales
 from .utils import get_item_info_from_xxx_api, resp, send_captcha
 
 
@@ -79,7 +79,7 @@ def itemInfo(request, barcode):
     iteminfo = get_item_info_from_xxx_api(barcode)
     if(iteminfo):
         i = Item(bar_code = barcode)
-        i.dictializer(iteminfo)
+        i.dictializer(dictionary = iteminfo)
         i.save()
         return resp(data=i.getDict())
     else:
@@ -115,7 +115,7 @@ def record(request, recordid):
                 
         if(params):
             a = Account()
-            a.dictializer(params)
+            a.dictializer(dictionary = params)
             a.stock = params['num']
             a.user = u
             a.totelprice = (float(params['num']) * float(params['price'])) 
@@ -146,6 +146,26 @@ def account(request):
         return resp(data = result)
     else:
         raise Http404()
+
+
+def sale(request):
+    u = request.META.get('user')
+    account_id = request.POST.get('aid')
+    num = float(request.POST.get('num'))
+    a = Account.objects.get(pk=account_id, user=u)
+    if a.stock < num:
+        return resp(code=5211)
+    a.stock -= num
+    totalprice = request.POST.get('totalprice')
+    if totalprice:
+        u.income += float(totalprice)
+    else:
+        u.income += float(request.POST.get('price',deault=0)) * num
+    s = Sales()
+    s.dictializer(request.POST)
+    
+
+
     
     #反馈
 def feedback(request):

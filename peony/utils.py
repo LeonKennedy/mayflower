@@ -37,6 +37,7 @@ def resp(success=True, data=None, code = 0):
         5124: 'captcha server is wrong! calling olenji!',
         5126: 'captcha is not matching!',
         5128: 'captcha is expired! please re-send!',
+        5211: 'item stock is not enough!',
         
     }
     answer = {"success":success, "data":data, "code":code, "msg":error_code.get(code)}
