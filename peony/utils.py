@@ -13,11 +13,11 @@ from django.http import HttpResponse,JsonResponse, Http404
 import hashlib, random
 
 def get_item_info_from_xxx_api(barcode):
-    iteminfo = {'name':'妮维雅小黑瓶', 'en_name':'black bottle', 
+    iteminfo = {'name':u'妮维雅小黑瓶', 'en_name':'black bottle', 
     'price' :  12313.12,
     'img':'https://ss1.bdstatic.com/94oJfD_bAAcT8t7mm9GUKT-xh_/timg?image&quality=100&size=b4000_4000&sec=1488375832&di=b876ca7f1010d2b08c49e34a75b7111f&src=http://image1.suning.cn/b3c/catentries/000000000121293197_1_800x800.jpg',
     'netweight':1000,
-    'tag': 'bbbb', 'message': '眼霜 效果不错'}
+    'tag': 'bbbb', 'message': u'眼霜 效果不错'}
     return iteminfo
 
 

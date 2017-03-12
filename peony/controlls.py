@@ -69,19 +69,32 @@ def profile(request):
 
 def itemInfo(request, barcode):
     #get from db
+    u = request.META.get('user')
     items = Item.objects.filter(bar_code = barcode)
     if(items):
-        item = items[0]
-        print(item.getDict())
-        return resp(data=item.getDict())
-
+        for item in items:
+            if item.user == u:
+                return resp(data=item.getDict())
+        #新建一个副本
+        ibyu = Item()
+        ibyu.itemcopy(item)
+        ibyu.user = u
+        ibyu.mom = item
+        ibyu.save()
+        return resp(data=ibyu.getDict())
+                
     #get from api
     iteminfo = get_item_info_from_xxx_api(barcode)
     if(iteminfo):
         i = Item(bar_code = barcode)
         i.dictializer(dictionary = iteminfo)
         i.save()
-        return resp(data=i.getDict())
+        ibyu = Item()
+        ibyu.itemcopy(i)
+        ibyu.user = u
+        ibyu.mom = i
+        ibyu.save()
+        return resp(data=ibyu.getDict())
     else:
         raise Http404()
 
@@ -125,6 +138,13 @@ def record(request, recordid):
             u.save()
             return resp(a.getDict())
         return resp()
+
+#库存信息
+def inventory(request):
+    if request.method == 'GET':
+        return resp()
+    else:
+        raise Http404()
 
 #账户信息
 def account(request):

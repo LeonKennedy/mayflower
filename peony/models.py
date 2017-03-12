@@ -1,4 +1,4 @@
-import uuid, datetime
+import uuid, datetime, pdb
 from django.db import models
 from django.core import serializers
 
@@ -13,6 +13,9 @@ class PeonyModel(models.Model):
 
     def dictializer(self,queryset =None, dictionary=None):
         if queryset:
+            for k in queryset:
+                if(hasattr(self, k)):
+                    object.__setattr__(self, k, queryset.get(k))
             return True
         for k in dictionary.keys():
             if(hasattr(self, k)):
@@ -39,26 +42,40 @@ class Token(models.Model):
     
 
 class Item(PeonyModel):
-    name = models.CharField(max_length=124, default=None)
-    en_name = models.CharField(max_length=124, default=None)
-    bar_code = models.CharField(max_length=64, unique=True, null=True, default=None)
+    name = models.CharField(max_length=124)
+    en_name = models.CharField(max_length=124, null=True,default=None)
+    bar_code = models.CharField(max_length=64, null=True, default=None)
     price = models.FloatField(default=0)
-    img = models.CharField(max_length=255, default=None)
+    img = models.CharField(max_length=255, null=True,default=None)
     netweight = models.FloatField(default=0)
-    tag = models.CharField(max_length=122, default=None)
-    origin = models.CharField(max_length=3, default='US')
+    tag = models.CharField(max_length=122,null=True, default=None)
+    origin = models.CharField(max_length=3, null=True,default='US')
     remark = models.CharField(max_length=255, null=True)
     create_date = models.DateTimeField(auto_now_add=True)
-    message = models.CharField(max_length=122,default=None)
+    update_date = models.DateTimeField('last edit', auto_now = True)
+    message = models.CharField(max_length=122,null=True,default=None)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    mom = models.ForeignKey('self', on_delete=models.CASCADE,null=True)
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
-    def dictializer(self, dictionary):
-        for k in dictionary.keys():
-            if(hasattr(self, k)):
-                object.__setattr__(self, k, dictionary[k])
+    def itemcopy(self,i):
+        pass_attr = ('id', 'mom', 'user', 'create_data', 'update_date')
+        attr = [ i.attname for i in self._meta.fields if i.attname not in pass_attr ]
+        for a in attr:
+            object.__setattr__(self, a, i.__getattribute__(a))
 
+
+class Inventory(PeonyModel):
+    user = models.ForeignKey(User, on_delete = models.CASCADE)
+    item = models.ForeignKey(Item, null=True)
+    stock = models.FloatField(default=1)
+    num = models.FloatField(default=1)
+    income = models.FloatField(default=0)
+    expences = models.FloatField(default=0)
+    create_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField('last edit', auto_now = True)
 #入库账单
 class Account(PeonyModel):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
