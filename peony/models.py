@@ -8,7 +8,7 @@ class PeonyModel(models.Model):
     class Meta:
         abstract = True
 
-    def getDict(self):
+    def getBaseDict(self):
         return dict([(i.attname,self.__getattribute__(i.attname)) for i in self._meta.fields ])
 
     def dictializer(self,queryset =None, dictionary=None):
@@ -70,8 +70,8 @@ class Item(PeonyModel):
 class Inventory(PeonyModel):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
     item = models.ForeignKey(Item, null=True)
-    stock = models.FloatField(default=1)
-    num = models.FloatField(default=1)
+    stock = models.FloatField(default=0)
+    num = models.FloatField(default=0)
     income = models.FloatField(default=0)
     expences = models.FloatField(default=0)
     create_date = models.DateTimeField(auto_now_add=True)
@@ -80,11 +80,11 @@ class Inventory(PeonyModel):
 class Account(PeonyModel):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
     item = models.ForeignKey(Item, null=True)
-    num = models.FloatField(default=1)
-    stock = models.FloatField(default=1)
+    num = models.FloatField(default=0)
+    #stock = models.FloatField(default=0)
     price = models.FloatField(default=0)
     shop = models.CharField(max_length=124, default=None)
-    totelprice = models.FloatField('total price', default=0)
+    totalprice = models.FloatField('total price', default=0)
     origin = models.CharField(max_length=3, default='US')
     paytype = models.CharField(max_length=3, default = 0 )
     create_date = models.DateTimeField(auto_now_add=True)

@@ -12,7 +12,8 @@ import pickle, random, datetime, pdb
 from django.http import HttpResponse,JsonResponse, Http404 
 from django.core import serializers
 from django.conf import settings
-from .models import User, Item, Account, Captcha,Token, Feedback, Sales
+from django.db import transaction
+from .models import User, Item, Account, Captcha,Token, Feedback, Sales, Inventory
 from .utils import get_item_info_from_xxx_api, resp, send_captcha
 
 
@@ -56,7 +57,7 @@ def login(request):
 def register(param):
     u, created =  User.objects.get_or_create(**param) 
     t, iscreated = Token.objects.get_or_create(user=u)
-    data = u.getDict()
+    data = u.getBaseDict()
     data['token'] = t.id
     return data,created
 
@@ -65,7 +66,7 @@ def profile(request):
     if(request.method == 'POST'):
         u.phone = request.POST.get('phone')
         u.save()
-    return resp(data = u.getDict())
+    return resp(data = u.getBaseDict())
 
 def itemInfo(request, barcode):
     #get from db
@@ -74,14 +75,14 @@ def itemInfo(request, barcode):
     if(items):
         for item in items:
             if item.user == u:
-                return resp(data=item.getDict())
+                return resp(data=item.getBaseDict())
         #新建一个副本
         ibyu = Item()
         ibyu.itemcopy(item)
         ibyu.user = u
         ibyu.mom = item
         ibyu.save()
-        return resp(data=ibyu.getDict())
+        return resp(data=ibyu.getBaseDict())
                 
     #get from api
     iteminfo = get_item_info_from_xxx_api(barcode)
@@ -94,53 +95,56 @@ def itemInfo(request, barcode):
         ibyu.user = u
         ibyu.mom = i
         ibyu.save()
-        return resp(data=ibyu.getDict())
+        return resp(data=ibyu.getBaseDict())
     else:
         raise Http404()
 
    
 #记录一条
+@transaction.atomic
 def record(request, recordid):
     u = request.META.get('user')
     if(request.method == 'DELETE'):
         a = Account.objects.filter(pk= recordid,user=u)
         if a:
             a = a[0]
+        else:
+            return resp(success=False)
         if(settings.DEBUG):
             a.delete()
         else:
             a.update(status=7)
+        inv = Inventory.objects.get(user=u, item = a.item)
+        inv.stock -= a.num
+        inv.num -= a.num
+        inv.expences -= a.totalprice
+        inv.save()
         #支出减少
-        u.expenditure -= a.totelprice 
+        u.expenditure -= a.totalprice 
         u.save()
         return resp()
     elif(request.method == 'GET'):
-        a = Account.objects.filter(pk=recordid)
+        a = Account.objects.filter(pk=recordid, user =u)
         if(a):
-            return resp(a[0].getDict())
+            return resp(a[0].getBaseDict())
         else:
             raise Http404()
-    else:
-        params = {}
-        for key in request.POST:
-            if(request.POST.get(key)):
-                params[key] =  request.POST.get(key)
-                
-        if(params):
-            a = Account()
-            a.dictializer(dictionary = params)
-            a.stock = params['num']
-            a.user = u
-            a.totelprice = (float(params['num']) * float(params['price'])) 
-            a.save()
-            #计算支出
-            u.expenditure += a.totelprice
-            u.save()
-            return resp(a.getDict())
+    elif(request.method == 'POST'):
+        a = Account(user = u)
+        a.dictializer(queryset=request.POST)
+        a.save()
+        inv, created = Inventory.objects.get_or_create(user = u, item = a.item)
+        inv.stock += float(a.num)
+        inv.num += float(a.num)
+        inv.expences += float(a.totalprice)
+        inv.save()
+        u.expenditure += float(a.totalprice)
+        u.save()
         return resp()
 
 #库存信息
 def inventory(request):
+    u = request.META.get('user')
     if request.method == 'GET':
         return resp()
     else:
@@ -157,7 +161,7 @@ def account(request):
             offset, limit = 0, 10
         records = list()
         for a in Account.objects.filter(user=u)[offset:limit]:
-            records.append(a.getDict())
+            records.append(a.getBaseDict())
         result = {
             'total' : Account.objects.filter(user = u).count(),
             'offset' : offset,
@@ -198,7 +202,7 @@ def feedback(request):
             offset, limit = 0, 10
         records = list()
         for f in Feedback.objects.filter(user=u)[offset:limit]:
-            records.append(f.getDict())
+            records.append(f.getBaseDict())
         result = {
             'total' : Feedback.objects.filter(user = u).count(),
             'offset' : offset,
