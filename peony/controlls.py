@@ -203,12 +203,40 @@ def sale(request, sid):
     elif request.method == 'DELETE':
         s = Sales.objects.get(pk = sid, user = u)
         #订单修改
+        inv = s.inventory
         if(settings.DEBUG):
             s.delete()
         else:
-            s.update(status=7)
+            s.status = 7
+            s.save()
+        inv.income -=s.totalprice
+        inv.save()
+        u.income -= s.totalprice
+        u.save
         return resp()
-
+    elif request.method == 'POST':
+        try:
+            inv_id = int(request.POST['inventory_id'])
+            pdb.set_trace()
+            inv = Inventory.objects.get(pk = inv_id, user = u)
+        except ValueError:
+            return resp(code=2222)
+        except :
+            return resp(code=5214)
+        num = float(request.POST['num'])
+        totalprice = float(request.POST['totalprice'])
+        if inv.stock < num:
+            return resp(code=5213)
+        s = Sales(user=u, item=inv.item,num = num, totalprice = totalprice)
+        s.price = request.POST['price']
+        s.message = request.POST.get('message')
+        s.save()
+        inv.stock -= num
+        inv.income += totalprice
+        inv.save()
+        u.income += totalprice
+        u.save()
+        return resp(data = s.getBaseDict())
 
 @transaction.atomic
 def sales(request):
