@@ -99,13 +99,26 @@ def itemInfo(request, barcode):
     else:
         raise Http404()
 
+
+def records(request, invid):
+    if request.method == 'GET':
+        u = request.META.get('user')
+        if invid:
+            a = Account.objects.filter(user = u, inventory_id = invid)
+        else:
+            a = Account.objects.filter(user = u)
+        results = list()
+        for la in a:
+            results.append(la.getBaseDict())
+        return resp(data=results)
+    
    
 #记录一条
 @transaction.atomic
 def record(request, recordid):
     u = request.META.get('user')
     if(request.method == 'DELETE'):
-        a = Account.objects.filter(pk= recordid,user=u)
+        a = Account.objects.filter(pk= recordid,user=u, status=0)
         if a:
             a = a[0]
         else:
@@ -114,7 +127,8 @@ def record(request, recordid):
             a.delete()
         else:
             a.update(status=7)
-        inv = Inventory.objects.get(user=u, item = a.item)
+        #inv = Inventory.objects.get(user=u, item = a.item,)
+        inv = a.inventory
         inv.stock -= a.num
         inv.num -= a.num
         inv.expences -= a.totalprice
@@ -133,7 +147,15 @@ def record(request, recordid):
         a = Account(user = u)
         a.dictializer(queryset=request.POST)
         a.save()
-        inv, created = Inventory.objects.get_or_create(user = u, item = a.item)
+        inv_id = int(request.POST.get('inventory_id', default = 0))
+        inv = Inventory.objects.filter(pk = inv_id, user = u) 
+        if inv:
+            inv = inv[0]
+        else:
+            inv = Inventory(user= u, item = a.item)
+            inv.save()
+            a.inventory = inv
+            a.save()
         inv.stock += float(a.num)
         inv.num += float(a.num)
         inv.expences += float(a.totalprice)
@@ -172,23 +194,56 @@ def account(request):
         raise Http404()
 
 
-def sale(request):
+@transaction.atomic
+def sale(request, sid):
     u = request.META.get('user')
-    account_id = request.POST.get('aid')
-    num = float(request.POST.get('num'))
-    a = Account.objects.get(pk=account_id, user=u)
-    if a.stock < num:
-        return resp(code=5211)
-    a.stock -= num
-    totalprice = request.POST.get('totalprice')
-    if totalprice:
-        u.income += float(totalprice)
-    else:
-        u.income += float(request.POST.get('price',deault=0)) * num
-    s = Sales()
-    s.dictializer(request.POST)
-    
+    if request.method == 'GET':
+        s = Sales.objects.get(user = u, pk = sid)
+        return resp(data=s.getBaseDict())
+    elif request.method == 'DELETE':
+        s = Sales.objects.get(pk = sid, user = u)
+        #订单修改
+        if(settings.DEBUG):
+            s.delete()
+        else:
+            s.update(status=7)
+        return resp()
 
+
+@transaction.atomic
+def sales(request):
+    u = request.META.get('user')
+    if request.method == 'GET':
+        s = Sales.objects.filter(user = u)
+        return resp()
+    elif request.method == 'DELETE':
+        s = Sales.objects.get(pk = sid, user = u)
+        if(settings.DEBUG):
+            s.delete()
+        else:
+            s.update(status=7)
+    else:
+        try:
+            inv_id = int(request.POST['invid'])
+            inv = Inventory.objects.get(pk = inv_id, user = u)
+        except ValueError:
+            return resp(code=2222)
+        except :
+            return resp(code=5214)
+        num = float(request.POST['num'])
+        totalprice = float(request.POST['totalprice'])
+        if inv.stock < num:
+            return resp(code=5213)
+        s = Sales(user=u, item=inv.item,num = num, totalprice = totalprice)
+        s.price = request.POST['price']
+        s.message = request.POST.get('message')
+        s.save()
+        inv.stock -= num
+        inv.income += totalprice
+        inv.save()
+        u.income += totalprice
+        u.save()
+        return resp(data = s.getBaseDict())
 
     
     #反馈

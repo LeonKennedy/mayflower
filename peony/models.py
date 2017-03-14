@@ -76,6 +76,7 @@ class Inventory(PeonyModel):
     expences = models.FloatField(default=0)
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField('last edit', auto_now = True)
+
 #入库账单
 class Account(PeonyModel):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
@@ -93,15 +94,16 @@ class Account(PeonyModel):
     # 0 is default
     # 7 is delete
     status = models.SmallIntegerField(default = 0 )
+    inventory = models.ForeignKey(Inventory,null=True)
 
 
 #售出账单
 class Sales(PeonyModel):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
     item = models.ForeignKey(Item, null=True)
-    num = models.FloatField(default=1)
+    num = models.FloatField(default=0)
     price = models.FloatField(default=0)
-    totelprice = models.FloatField(default=0)
+    totalprice = models.FloatField(default=0)
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField('last edit', auto_now = True)
     message = models.CharField(max_length=255, default=None, null=True)

@@ -33,12 +33,14 @@ def json_parse(data):
 def resp(success=True, data=None, code = 0):
     error_code = {
 #       验证码填写时缺少参数
+        2222: 'params error',
         5122: 'verify captcha code miss phone number and captcha code',
         5124: 'captcha server is wrong! calling olenji!',
         5126: 'captcha is not matching!',
         5128: 'captcha is expired! please re-send!',
         5211: 'item stock is not enough!',
-        
+        5213: 'inventory num is not enough!',
+        5214: 'not found inventory account',
     }
     answer = {"success":success, "data":data, "code":code, "msg":error_code.get(code)}
     if code:

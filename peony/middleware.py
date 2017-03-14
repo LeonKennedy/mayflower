@@ -10,7 +10,7 @@
 
 from .models import Token
 from django.http import HttpResponse,JsonResponse, Http404 
-import re
+import re,pdb
 
 
 class VerifyMiddleware(object):
@@ -40,7 +40,7 @@ class VerifyMiddleware(object):
 
     def verifytoken(self, request):
         #需要验证的方法 加入此元祖
-        repr_list = ('inventory', 'profile','item','record', 'account','feedback')
+        repr_list = ('sale', 'inventory', 'profile','item','record', 'records', 'account','feedback')
         mayflowertoken = request.META.get("HTTP_TOKEN")
         if not request.path.split('/')[2] in repr_list:
             return True
