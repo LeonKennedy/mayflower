@@ -217,7 +217,6 @@ def sale(request, sid):
     elif request.method == 'POST':
         try:
             inv_id = int(request.POST['inventory_id'])
-            pdb.set_trace()
             inv = Inventory.objects.get(pk = inv_id, user = u)
         except ValueError:
             return resp(code=2222)
