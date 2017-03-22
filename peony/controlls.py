@@ -8,13 +8,14 @@
 # Last Modified: 2017-02-16 15:28:18
 #**********************************************/
 
-import pickle, random, datetime, pdb
+import pickle, random, datetime, pdb, re
 from django.http import HttpResponse,JsonResponse, Http404 
 from django.core import serializers
 from django.conf import settings
 from django.db import transaction
 from .models import User, Item, Account, Captcha,Token, Feedback, Sales, Inventory
 from .utils import get_item_info_from_xxx_api, resp, send_captcha
+from .barcode import BarCode
 
 
 #发射手机验证码
@@ -71,21 +72,27 @@ def profile(request):
 def itemInfo(request, barcode):
     #get from db
     u = request.META.get('user')
+    if not re.match(r'\d{13}', barcode):
+        return resp(code=2231)
+
     items = Item.objects.filter(bar_code = barcode)
     if(items):
+        momitem = None
         for item in items:
             if item.user == u:
                 return resp(data=item.getBaseDict())
+            if not item.mom:
+                momitem = item
         #新建一个副本
         ibyu = Item()
-        ibyu.itemcopy(item)
+        ibyu.itemcopy(momitem)
         ibyu.user = u
-        ibyu.mom = item
+        ibyu.mom = momitem
         ibyu.save()
         return resp(data=ibyu.getBaseDict())
                 
     #get from api
-    iteminfo = get_item_info_from_xxx_api(barcode)
+    iteminfo = BarCode.search_h5taobao(barcode)
     if(iteminfo):
         i = Item(bar_code = barcode)
         i.dictializer(dictionary = iteminfo)

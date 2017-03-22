@@ -57,7 +57,8 @@ class BarCode:
         display = Display(visible=0, size=(1024, 768))
         display.start()
         driver = webdriver.Firefox()
-        driver.get("http://h5.m.taobao.com/qrbuy/sdk.html?appkey=23040383&barcode=4987084410443&type=1")
+        url = "http://h5.m.taobao.com/qrbuy/sdk.html?appkey=23040383&barcode=%s&type=1" % barcode
+        driver.get(url)
         time.sleep(2)
         #driver.find_element_by_name('div')
         item = driver.find_element_by_xpath("//div[@class='info-box']")
@@ -79,6 +80,4 @@ class BarCode:
 if __name__ == "__main__":
     code = 4987084410443
     #b =  BarCode(4987084410443)
-    b = BarCode.search_h5taobao(code)
-    print(b)
-
+    #b = BarCode.search_h5taobao(code)

@@ -34,6 +34,7 @@ def resp(success=True, data=None, code = 0):
     error_code = {
 #       验证码填写时缺少参数
         2222: 'params error',
+        2231: 'barcode is error',
         5122: 'verify captcha code miss phone number and captcha code',
         5124: 'captcha server is wrong! calling olenji!',
         5126: 'captcha is not matching!',
