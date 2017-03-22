@@ -154,6 +154,27 @@ def record(request, recordid):
         a = Account(user = u)
         a.dictializer(queryset=request.POST)
         a.save()
+        #inv_id = int(request.POST.get('inventory_id', default = 0))
+        inv, created = Inventory.objects.get_or_create(user=u, item=a.item)
+        num = float(request.POST.get('num',default =0)) 
+        totalprice = float(request.POST.get('totalprice', default = 0))
+        if created:
+            inv.num = inv.stock = num
+            inv.expences = totalprice
+        else:
+            inv.stock += num
+            inv.num += num
+            inv.expences += totalprice
+        inv.save()
+        a.inventory = inv
+        a.save()
+        return resp()
+    '''
+#    design by olenji
+    elif(request.method == 'POST'):
+        a = Account(user = u)
+        a.dictializer(queryset=request.POST)
+        a.save()
         inv_id = int(request.POST.get('inventory_id', default = 0))
         inv = Inventory.objects.filter(pk = inv_id, user = u) 
         if inv:
@@ -170,6 +191,7 @@ def record(request, recordid):
         u.expenditure += float(a.totalprice)
         u.save()
         return resp()
+        '''
 
 #库存信息
 def inventory(request):
