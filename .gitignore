@@ -4,3 +4,4 @@ peony/__pycache__
 mayflower.log
 project-master.pid
 *.swp
+geckodriver.log

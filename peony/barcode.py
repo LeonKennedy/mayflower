@@ -8,6 +8,8 @@
 
 import requests, time, pdb
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from pyvirtualdisplay import Display
 
 BARCODE_TABLE = (
 (0,19,'American', 'us'),
@@ -46,15 +48,37 @@ class BarCode:
 
 
     @staticmethod
-    def search_taobaoh5(barcode):
+    def search_h5taobao(barcode):
         url = "http://h5.m.taobao.com/qrbuy/sdk.html"
         params = {
             'appkey' : 23040383,
             'barcode' : barcode,
             'type' : 1 }
-        r = requests.get(url, params = params, headers = self.headers)
+        display = Display(visible=0, size=(1024, 768))
+        display.start()
+        driver = webdriver.Firefox()
+        driver.get("http://h5.m.taobao.com/qrbuy/sdk.html?appkey=23040383&barcode=4987084410443&type=1")
+        time.sleep(2)
+        #driver.find_element_by_name('div')
+        item = driver.find_element_by_xpath("//div[@class='info-box']")
+        img = item.find_element_by_tag_name("img").get_attribute('src')
+        name = item.find_element_by_tag_name('h4').text
+        price = item.find_element_by_xpath("//span[@class='major-price']").text
+        driver.close()
+        display.stop()
+        return {
+            'img' :  img,
+            'name' : name,
+            'price' : float(price),
+            'bar_code': barcode}
+
+        #r = requests.Session().get(url, params = params, headers = BarCode.headers)
+        #bs = BeautifulSoup(r.content, 'lxml')
+        #item = bs.find('div', class_ = 'info-box')
 
 if __name__ == "__main__":
-    b =  BarCode(4987084410443)
-    print(b.search())
+    code = 4987084410443
+    #b =  BarCode(4987084410443)
+    b = BarCode.search_h5taobao(code)
+    print(b)
 
