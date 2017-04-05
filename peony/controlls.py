@@ -13,9 +13,10 @@ from django.http import HttpResponse,JsonResponse, Http404
 from django.core import serializers
 from django.conf import settings
 from django.db import transaction
-from .models import User, Item, Account, Captcha,Token, Feedback, Sales, Inventory
+from .models import User, Item, Account, Captcha,Token, Feedback, Sales, Inventory, ExchangeRate
 from .utils import get_item_info_from_xxx_api, resp, send_captcha
 from .barcode import BarCode
+from .exchangerate import RateSpider
 
 
 #发射手机验证码
@@ -324,3 +325,15 @@ def feedback(request):
         content = request.POST.get('content')
         if content : f = Feedback.objects.create(user=u, content=content)
         return resp()
+
+
+def updateExchangeRate(request):
+    if request.method == 'POST':
+        ratespider = RateSpider()
+        ratespider.getAllPage()
+        for record in ratespider.ratetable:
+            name = record.pop('name')
+            exchangerate ,  created = ExchangeRate.objects.update_or_create(name = name, defaults = record)
+        return resp()
+    return resp(success = False)
+

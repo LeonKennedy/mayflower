@@ -30,7 +30,7 @@ class VerifyMiddleware(object):
         return response
 
     def process_request(self, request):
-        print("here is request process")
+        pass
 
 
     def process_response(self, request, response):

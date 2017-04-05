@@ -25,5 +25,6 @@ urlpatterns = [
     url(r'^sale/(?P<sid>[0-9]*)$', controlls.sale, name= 'sale'),
     url(r'^sales$', controlls.sales, name= 'sales'),
     url(r'^feedback$', controlls.feedback, name= 'feedback'),
+    url(r'^updateExchangeRate$', controlls.updateExchangeRate, name= 'updateExchangeRate'),
 ]
 

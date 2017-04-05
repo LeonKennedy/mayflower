@@ -111,6 +111,7 @@ class Sales(PeonyModel):
     # 7 is delete
     status = models.SmallIntegerField(default = 0 )
     
+#message captcha for verify
 class Captcha(PeonyModel):
     phone = models.CharField(max_length=15,unique=True)
     code = models.PositiveIntegerField()
@@ -122,10 +123,23 @@ class Captcha(PeonyModel):
         return self.last_date < (datetime.datetime.utcnow() - datetime.timedelta(minutes=15))
     
 
+#feedback message from user
 class Feedback(PeonyModel):
     user = models.ForeignKey(User)
     content = models.CharField(max_length=512, default=None)
     create_date = models.DateTimeField(auto_now_add=True)
+
+
+#exchange rate
+class ExchangeRate(PeonyModel):
+    name = models.CharField(max_length=15,unique=True)
+    buy_rate = models.FloatField(default = 0, null=True)
+    cash_buy_rate = models.FloatField(default = 0, null=True)
+    sell_rate = models.FloatField(default = 0, null=True)
+    cash_sell_rate = models.FloatField(default = 0, null=True)
+    middle_rate = models.FloatField(default = 0, null=True)
+    publish_date = models.DateTimeField(auto_now_add = True)
+    update_date = models.DateTimeField(auto_now=True)
     
     
     
